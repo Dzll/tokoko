@@ -15,13 +15,32 @@
         <h1 class="text-white font-bold text-lg">Tokoko</h1>
         <p class="text-green-200 text-sm">Toko Sembako Online</p>
       </div>
-      <div class="ml-auto flex gap-2">
-        <span class="w-3 h-3 bg-green-300 rounded-full inline-block"></span>
-        <span class="text-green-200 text-xs">Online</span>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="relative">
+          <button id="logoutBtn" class="hidden w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition shadow-sm" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+          <div id="logoutPopover" class="hidden absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 w-44 z-50">
+            <p class="text-sm text-gray-700 font-medium mb-3 text-center">Yakin logout?</p>
+            <div class="flex gap-2">
+              <button id="logoutCancel" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-xl text-xs font-semibold transition">Batal</button>
+              <button id="logoutConfirm" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl text-xs font-semibold transition">Logout</button>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span id="adminBadge" class="hidden text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">🛡️ Admin</span>
+          <div class="flex items-center gap-1">
+            <span class="w-3 h-3 bg-green-300 rounded-full inline-block"></span>
+            <span class="text-green-200 text-xs">Online</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="chat" class="chat-box h-[420px] overflow-y-auto p-5 space-y-4 bg-gray-50"></div>
+    <div id="chat" class="chat-box h-[560px] overflow-y-auto p-5 space-y-4 bg-gray-50"></div>
 
     <div id="typing" class="hidden px-5 pb-2">
       <div class="flex gap-3 items-center">
@@ -44,8 +63,8 @@
       </form>
       <div class="flex items-center justify-between mt-3 px-1">
         <p class="text-xs text-gray-400">Ditenagai oleh Google AI Studio</p>
-        <div class="flex gap-2">
-          <a href="/admin" class="text-xs text-gray-400 hover:text-green-600 transition">Admin</a>
+        <div class="flex gap-2 items-center">
+          <a id="adminLink" href="/admin" class="text-xs text-gray-400 hover:text-green-600 transition">Admin</a>
           <button id="clearBtn" class="text-xs text-red-500 hover:text-red-700 font-semibold transition">Hapus Chat</button>
         </div>
       </div>

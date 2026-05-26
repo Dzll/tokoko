@@ -112,12 +112,36 @@ Chat akan tersimpan otomatis selama **12 jam** (refresh halaman tetap ada). Tiap
 
 Untuk menghapus riwayat, klik **Hapus Chat** → konfirmasi di modal.
 
+### Edit Harga via Chat (Admin)
+
+Jika login sebagai admin, kamu bisa edit harga produk langsung dari chat tanpa buka dashboard.
+
+**Format:**
+```
+/edit nama produk hargabaru
+```
+
+**Contoh:**
+```
+/edit minyak sania 2l 32000
+/edit beras premium 5kg 75000
+/edit indomie goreng 4000
+```
+
+Balasan chatbot: `✅ Harga Minyak Goreng Sania 2L berhasil diupdate menjadi Rp32.000`
+
+> **Syarat:** Harus login sebagai admin (session aktif). Nama produk dicocokkan dari `prompt.txt` (case insensitive).
+
+---
+
 ### Admin Dashboard
 
 Buka **http://localhost:3000/admin**
 
 #### Login
 Masukkan `username` dan `password` (sesuai yang diatur di `.env`).
+
+Setelah login, badge **🛡️ Admin** muncul di footer chat. Bisa edit harga via chat dengan perintah `/edit`.
 
 #### Edit System Prompt
 1. Setelah login, buka halaman **Dashboard**

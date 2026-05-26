@@ -11,9 +11,15 @@
 <body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen p-6">
   <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Dashboard Admin</h1>
-        <p class="text-gray-500 text-sm">Kelola system prompt Tokoko</p>
+      <div class="flex items-center gap-4">
+        <a href="/"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-2xl text-sm font-semibold transition text-center">
+          &larr; Kembali ke Chat
+        </a>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Dashboard Admin</h1>
+          <p class="text-gray-500 text-sm">Kelola system prompt Tokoko</p>
+        </div>
       </div>
       <form action="/admin/logout" method="POST">
         <button type="submit"
@@ -35,10 +41,6 @@
             class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition shadow-md">
             Simpan Perubahan
           </button>
-          <a href="/"
-            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-2xl font-semibold text-sm transition text-center">
-            Kembali ke Chat
-          </a>
         </div>
       </form>
     </div>

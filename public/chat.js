@@ -19,7 +19,12 @@ function saveMessages() {
     const isBot = row.querySelector('.msg-bot');
     const textEl = row.querySelector(isBot ? '.msg-bot' : '.msg-user');
     const timeEl = row.querySelector('.msg-time');
-    if (textEl) messages.push({ role: isBot ? 'bot' : 'user', text: textEl.innerHTML, time: timeEl ? timeEl.textContent : '' });
+    if (textEl) {
+      const clone = textEl.cloneNode(true);
+      const t = clone.querySelector('.msg-time');
+      if (t) t.remove();
+      messages.push({ role: isBot ? 'bot' : 'user', text: clone.innerHTML, time: timeEl ? timeEl.textContent : '' });
+    }
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
   localStorage.setItem(STORAGE_KEY + '_time', Date.now().toString());
@@ -116,3 +121,37 @@ modalConfirm.addEventListener('click', () => {
   saveMessages();
   modal.classList.add('hidden');
 });
+
+const adminBadge = document.getElementById('adminBadge');
+const adminLink = document.getElementById('adminLink');
+const logoutBtn = document.getElementById('logoutBtn');
+const logoutPopover = document.getElementById('logoutPopover');
+const logoutCancel = document.getElementById('logoutCancel');
+const logoutConfirm = document.getElementById('logoutConfirm');
+
+logoutCancel.addEventListener('click', () => logoutPopover.classList.add('hidden'));
+logoutConfirm.addEventListener('click', () => {
+  fetch('/admin/logout', { method: 'POST' }).then(() => { window.location.href = '/'; });
+});
+
+fetch('/api/admin/status')
+  .then(r => r.json())
+  .then(data => {
+    if (data.admin) {
+      adminBadge.classList.remove('hidden');
+      logoutBtn.classList.remove('hidden');
+      adminLink.textContent = 'Prompt';
+      adminLink.href = '/admin/dashboard.html';
+      logoutBtn.addEventListener('click', () => logoutPopover.classList.toggle('hidden'));
+      document.addEventListener('click', (e) => {
+        if (!logoutBtn.contains(e.target) && !logoutPopover.contains(e.target)) {
+          logoutPopover.classList.add('hidden');
+        }
+      });
+      addMessage('👋 Anda login sebagai <strong>Admin</strong>. Gunakan perintah:<br><code>/edit nama produk hargabaru</code><br>Contoh: <code>/edit minyak sania 2l 32000</code>', 'bot', true);
+      saveMessages();
+    } else {
+      adminLink.textContent = 'Admin';
+      adminLink.href = '/admin';
+    }
+  });
