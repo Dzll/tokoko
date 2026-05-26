@@ -23,6 +23,24 @@ Chatbot toko sembako berbasis **Node.js + Express + Google Gemini AI**. Pelangga
 
 ---
 
+## Struktur File Penting
+
+```
+tokoko/
+├── prompt.txt            # System Prompt — edit langsung atau via admin
+├── .env                  # Konfigurasi API key, port, login admin
+├── public/
+│   ├── chat.html         # Halaman chat
+│   ├── chat.js           # Logic chat (localStorage, modal, timer)
+│   ├── style.css         # Style chat
+│   └── admin/
+│       ├── login.html    # Halaman login admin
+│       └── dashboard.html # Halaman edit prompt
+└── index.js              # Server Express + API
+```
+
+---
+
 ## Persiapan
 
 ```bash
@@ -49,6 +67,17 @@ ADMIN_PASSWORD=admin
 | `PORT` | Port server (default: 3000) |
 | `ADMIN_USERNAME` | Username login admin |
 | `ADMIN_PASSWORD` | Password login admin |
+
+### System Prompt (`prompt.txt`)
+
+Semua data toko, daftar produk, harga, dan aturan respons chatbot ada di file **`prompt.txt`**. Ada 2 cara edit:
+
+| Cara | Keterangan |
+|---|---|
+| **Manual** | Buka `prompt.txt`, edit, simpan, restart server (`npm start`) |
+| **Via Admin** | Login ke `/admin`, edit di dashboard, klik **Simpan** — langsung aktif |
+
+> ⚠️ Jika edit manual, server harus direstart. Jika via admin, perubahan langsung aktif tanpa restart.
 
 ---
 
@@ -79,7 +108,7 @@ Saya mau pesan 2 kg telur ayam negeri
 Ada rekomendasi minuman? 
 ```
 
-Chat akan tersimpan otomatis selama **12 jam**. Kalau halaman direfresh, riwayat chat tetap ada.
+Chat akan tersimpan otomatis selama **12 jam** (refresh halaman tetap ada). Tiap bubble chat dilengkapi jam.
 
 Untuk menghapus riwayat, klik **Hapus Chat** → konfirmasi di modal.
 
@@ -90,11 +119,11 @@ Buka **http://localhost:3000/admin**
 #### Login
 Masukkan `username` dan `password` (sesuai yang diatur di `.env`).
 
-#### Edit Data Toko
-1. Setelah login, kamu akan melihat halaman **Dashboard Admin**
-2. Edit teks di kolom **System Prompt** — bisa ubah harga, tambah produk, ubah aturan, dll
+#### Edit System Prompt
+1. Setelah login, buka halaman **Dashboard**
+2. Edit teks di kolom **System Prompt** — ubah harga, tambah produk, ubah aturan, dll
 3. Klik **Simpan Perubahan**
-4. Chatbot langsung merespons dengan data terbaru (tanpa restart server)
+4. Data tersimpan ke `prompt.txt` dan chatbot langsung merespons dengan data baru
 
 #### Logout
 Klik tombol **Logout** di pojok kanan atas dashboard.
