@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+* { font-family: 'Inter', sans-serif; }
+.chat-box { scroll-behavior: smooth; }
+.msg-bot { background: #f3f4f6; border-radius: 18px 18px 18px 4px; }
+.msg-user { background: #22c55e; color: white; border-radius: 18px 18px 4px 18px; }
+.typing-dot { animation: bounce 1.4s infinite ease-in-out both; }
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
+#input:focus { outline: none; }
