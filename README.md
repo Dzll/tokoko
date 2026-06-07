@@ -56,6 +56,8 @@ npm start
 
 ```
 GOOGLE_API_KEY=isi_api_key_kamu_disini
+GROQ_API_KEY=isi_groq_api_key_kamu_disini
+OPENAI_API_KEY=isi_openai_api_key_kamu_disini
 PORT=3000
 ADMIN_USERNAME=admin_tokoko
 ADMIN_PASSWORD=admin
@@ -63,7 +65,9 @@ ADMIN_PASSWORD=admin
 
 | Variabel | Keterangan |
 |---|---|
-| `GOOGLE_API_KEY` | Ambil dari [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| `GOOGLE_API_KEY` | **(Wajib)** Ambil dari [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| `GROQ_API_KEY` | **(Opsional)** Ambil dari [GroqCloud](https://console.groq.com/keys) — fallback pertama jika Gemini limit |
+| `OPENAI_API_KEY` | **(Opsional)** Ambil dari [OpenAI Platform](https://platform.openai.com/api-keys) — fallback kedua |
 | `PORT` | Port server (default: 3000) |
 | `ADMIN_USERNAME` | Username login admin |
 | `ADMIN_PASSWORD` | Password login admin |
@@ -154,12 +158,30 @@ Klik tombol **Logout** di pojok kanan atas dashboard.
 
 ---
 
+## Auto Fallback AI Provider
+
+Jika **Gemini** mengalami rate limit (429), aplikasi otomatis fallback ke provider lain secara berurutan:
+
+```
+Gemini (5 model) → GROQ (4 model) → OpenAI (2 model) → error
+```
+
+| Provider | Model | API Key |
+|---|---|---|
+| **Gemini** | `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`, `gemini-1.5-flash`, `gemini-1.5-flash-8b` | `GOOGLE_API_KEY` (wajib) |
+| **GROQ** | `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `gemma2-9b-it`, `mixtral-8x7b-32768` | `GROQ_API_KEY` (opsional) |
+| **OpenAI** | `gpt-4o-mini`, `gpt-3.5-turbo` | `OPENAI_API_KEY` (opsional) |
+
+Setelah fallback, request berikutnya tetap pakai provider yang aktif sampai provider tersebut juga limit. Admin cukup sediakan API key di `.env`, sisanya otomatis.
+
+---
+
 ## Tech Stack
 
 | Komponen | Teknologi |
 |---|---|
 | Backend | Node.js, Express |
-| AI Model | Google Gemini 2.5 Flash |
+| AI Model | Google Gemini, GROQ (fallback), OpenAI (fallback) |
 | Frontend | Tailwind CSS (CDN) |
 | Session | express-session |
 | Storage Chat | localStorage (12 jam) |
