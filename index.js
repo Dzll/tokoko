@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
@@ -10,12 +11,24 @@ const port = process.env.PORT || 3000;
 const PROMPT_PATH = path.join(__dirname, 'prompt.txt');
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const MODEL_LIST = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+let currentModelIndex = 0;
+
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const GPT_MODEL_LIST = ['gpt-4o-mini', 'gpt-3.5-turbo'];
+let openaiModelIndex = 0;
+let usingOpenAI = false;
+
+const groq = process.env.GROQ_API_KEY ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' }) : null;
+const GROQ_MODEL_LIST = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it', 'mixtral-8x7b-32768'];
+let groqModelIndex = 0;
+let usingGroq = false;
 
 let systemPrompt = fs.readFileSync(PROMPT_PATH, 'utf8');
 
-function createModel() {
+function createModel(index = currentModelIndex) {
   return genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: MODEL_LIST[index],
     systemInstruction: systemPrompt,
   });
 }
@@ -77,6 +90,44 @@ app.post('/admin/logout', requireAdmin, (req, res) => {
     res.redirect('/');
   });
 });
+
+async function generateWithOpenAI(message) {
+  for (let i = 0; i < GPT_MODEL_LIST.length; i++) {
+    const idx = (openaiModelIndex + i) % GPT_MODEL_LIST.length;
+    try {
+      const completion = await openai.chat.completions.create({
+        model: GPT_MODEL_LIST[idx],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message },
+        ],
+      });
+      openaiModelIndex = idx;
+      return completion.choices[0].message.content;
+    } catch (e) {
+      if (e.status !== 429 || i === GPT_MODEL_LIST.length - 1) throw e;
+    }
+  }
+}
+
+async function generateWithGroq(message) {
+  for (let i = 0; i < GROQ_MODEL_LIST.length; i++) {
+    const idx = (groqModelIndex + i) % GROQ_MODEL_LIST.length;
+    try {
+      const completion = await groq.chat.completions.create({
+        model: GROQ_MODEL_LIST[idx],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message },
+        ],
+      });
+      groqModelIndex = idx;
+      return completion.choices[0].message.content;
+    } catch (e) {
+      if (e.status !== 429 || i === GROQ_MODEL_LIST.length - 1) throw e;
+    }
+  }
+}
 
 app.post('/chat', async (req, res) => {
   const { message } = req.body;
@@ -252,13 +303,65 @@ app.post('/chat', async (req, res) => {
   }
 
   try {
+    if (usingGroq && groq) {
+      const reply = await generateWithGroq(message);
+      return res.json({ reply });
+    }
+    if (usingOpenAI && openai) {
+      const reply = await generateWithOpenAI(message);
+      return res.json({ reply });
+    }
+
     const result = await model.generateContent(message);
     const reply = result.response.text();
     res.json({ reply });
   } catch (err) {
     console.error(err);
     if (err.status === 429) {
-      return res.json({ reply: 'Maaf, kuota Gemini sedang habis. Tanya <strong>"harga [produk]"</strong> atau <strong>"stok [produk]"</strong> untuk info langsung, atau tunggu beberapa saat.' });
+      if (usingGroq || usingOpenAI) {
+        return res.json({
+          reply: 'Maaf, semua model AI sedang kehabisan kuota. Tanya <strong>"harga [produk]"</strong> atau <strong>"stok [produk]"</strong> untuk info langsung, atau tunggu beberapa saat.'
+        });
+      }
+
+      for (let i = 0; i < MODEL_LIST.length; i++) {
+        if (i === currentModelIndex) continue;
+        try {
+          model = createModel(i);
+          const result = await model.generateContent(message);
+          currentModelIndex = i;
+          console.log(`Switched to Gemini model: ${MODEL_LIST[i]}`);
+          return res.json({ reply: result.response.text() });
+        } catch (e) {
+          if (e.status !== 429) break;
+        }
+      }
+
+      if (groq) {
+        usingGroq = true;
+        try {
+          const reply = await generateWithGroq(message);
+          console.log('Fell back to GROQ');
+          return res.json({ reply });
+        } catch (e) {
+          usingGroq = false;
+        }
+      }
+
+      if (openai) {
+        usingOpenAI = true;
+        try {
+          const reply = await generateWithOpenAI(message);
+          console.log('Fell back to OpenAI');
+          return res.json({ reply });
+        } catch (e) {
+          usingOpenAI = false;
+        }
+      }
+
+      return res.json({
+        reply: 'Maaf, semua model AI sedang kehabisan kuota. Tanya <strong>"harga [produk]"</strong> atau <strong>"stok [produk]"</strong> untuk info langsung, atau tunggu beberapa saat.'
+      });
     }
     res.status(500).json({ reply: 'Maaf, terjadi kesalahan. Silakan coba lagi nanti.' });
   }
